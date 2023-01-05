@@ -77,7 +77,8 @@ def generate_label_txt(image_file, image_name, objects, label_directory, cate2nu
     def object2line(object):
         bbox = object.bbox # 不能假设python3.9字典就有序。
         x, y, w, h = xyxy2xywh(img_size, (bbox.xmin, bbox.ymin, bbox.xmax, bbox.ymax))
-        return f"{cate2num[object.category]} {x} {y} {w} {h}"
+        # return f"{cate2num[object.category]} {x} {y} {w} {h}"
+        return f"{cate2num[object.category]} {x} {y} {w} {h}\n" #必须换行！
     box_strs = map(object2line, objects)
     with open(out_file, 'w') as f:
         f.writelines(box_strs)

@@ -38,6 +38,28 @@ def read_param():
     params = DefaultMunch.fromDict(params)
     return params
 
+
+def write_txt(out_file, image_items):
+    """_summary_
+        image_item类似于
+        {'path': 'train/62627.jpg',
+        'id': 62627,
+        'objects': [{'bbox': {'xmin': 1580.0,
+            'ymin': 758.667,
+            'xmax': 1638.6667,
+            'ymax': 818.6667},
+        'category': 'ph5'}]}
+    Args:
+        out_file (_type_): 输出路径
+        image_items (_type_): 图片描述
+    """
+    
+    def item2line(image_item):
+        return f'./images/{image_item.path}\n'
+    image_strs = map(item2line, image_items)
+    with open(out_file, 'w') as f:
+        f.writelines(image_strs)
+    
 # %%
 # @memory.cache
 def handle_param(params: DefaultMunch):
@@ -71,13 +93,38 @@ def handle_param(params: DefaultMunch):
     types = annos.types
     num2cate = dict(enumerate(annos.types))
     cate2num = {v:k for k, v in num2cate.items()}
+    
+    
+    # txt文件生成
+    train_txt_name = f"{output_params.train_txt_name}{_current_time}.txt"
+    val_txt_name = f"{output_params.val_txt_name}{_current_time}.txt"
+    test_txt_name = f"{output_params.test_txt_name}{_current_time}.txt"
+    
+    # 给txt填充内容
+    imgs = list(annos.imgs.values())
+    # from sklearn.model_selection import train_test_split
+    from torch.utils.data import random_split
+    
+    train_dataset, val_dataset = random_split(
+        dataset=imgs,
+         lengths=[0.8, 0.2],
+        generator=torch.Generator().manual_seed(0)
+    )
+    test_dataset = val_dataset
+    
+    
+    write_txt(tt100k/train_txt_name, train_dataset)
+    write_txt(tt100k/val_txt_name, val_dataset)
+    write_txt(tt100k/test_txt_name, test_dataset)
+    
+
 
     # yaml生成。 跑yolov5只需要用到这个yaml
     dataset_yaml = DefaultMunch()
     dataset_yaml.path = str(result_data_location_path.relative_to(result_path))
-    dataset_yaml.train = f"{output_params.train_txt_name}{_current_time}.txt"
-    dataset_yaml.val = f"{output_params.val_txt_name}{_current_time}.txt"
-    dataset_yaml.test = f"{output_params.test_txt_name}{_current_time}.txt"
+    dataset_yaml.train = train_txt_name
+    dataset_yaml.val = val_txt_name
+    dataset_yaml.test = test_txt_name
     dataset_yaml.nc = len(types)
     dataset_yaml.names = num2cate
 
