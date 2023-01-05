@@ -98,9 +98,13 @@ def generate_label_txt_by_item(item, tt100k, image_directory, label_directory, c
         label_directory (_type_): 标签的路径，比如 labels/train
         cate2num (dict): 比如{'pl80':0}
     """
-    prefix = "train" if item.path.startswith("train") else "test"
+    # prefix = "train" if item.path.startswith("train") else "test"
+    prefix = item.path.split('/')[0]
     image_file = image_directory/item.path
-    return generate_label_txt(image_file, str(item.id), item.objects, label_directory/prefix, cate2num, override=False)
+    label_directory = label_directory/prefix
+    label_directory.mkdir(parents=True, exist_ok=True)
+    
+    return generate_label_txt(image_file, str(item.id), item.objects, label_directory, cate2num, override=False)
 
 # %%
 # @memory.cache
@@ -132,29 +136,31 @@ def handle_param(params: DefaultMunch):
     annos = DefaultMunch.fromDict(annos)
     
     # 生成labels
-    img_val = list(annos.imgs.values())
+    imgs = list(annos.imgs.values())
     num2cate = dict(enumerate(annos.types))
     cate2num = {v:k for k, v in num2cate.items()}
     
     image_directory, label_directory = tt100k/"images", tt100k/"labels"
     
     tasks = []
-    with futures.ThreadPoolExecutor(max_workers=128) as executor:
-        # 遍历所有的正样本。注意不是遍历train_path_pos，而是glob的结果——positive_files。
-        for i, item in enumerate(img_val):
-            # 多线程
-            tasks.append(
-                executor.submit(
-                    generate_label_txt_by_item,
-                    item, tt100k,image_directory, label_directory,  cate2num, False
-                )
-            )
-            # # 单线程
-            # generate_label_txt_by_item(
-            #         item, tt100k,image_directory, label_directory,  cate2num, False)
-        for task in tqdm(futures.as_completed(tasks), total=len(tasks)):
-            pass  # 等待所有任务完成
-        
+    # with futures.ThreadPoolExecutor(max_workers=128) as executor:
+    #     # 遍历所有的正样本。注意不是遍历train_path_pos，而是glob的结果——positive_files。
+    #     for i, item in enumerate(imgs):
+    #         # 多线程
+    #         tasks.append(
+    #             executor.submit(
+    #                 generate_label_txt_by_item,
+    #                 item, tt100k,image_directory, label_directory,  cate2num, False
+    #             )
+    #         )
+            
+    #     for task in tqdm(futures.as_completed(tasks), total=len(tasks)):
+    #         pass  # 等待所有任务完成
+    for i, item in tqdm(enumerate(imgs)):
+    
+    # 单线程
+        generate_label_txt_by_item(
+                item, tt100k,image_directory, label_directory,  cate2num, False)
     
     
 
