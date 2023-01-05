@@ -1,0 +1,27 @@
+[input]
+# tt100k 格式
+tt100k_path = '../../yolov5/datasets/tt100k_2021'
+
+[output]
+# 输出的路径
+result_path = "../../yolov5/"
+# 数据集的描述
+result_dataset_description_path = 'data'
+# 数据或者数据位置的描述
+result_data_location_path = "datasets"
+
+
+# 数据集.yaml中的描述信息
+train_txt_name = 'train'
+val_txt_name = 'val'
+test_txt_name = 'test'
+# test:  # test images (optional) TODO
+
+
+
+# 数据集输出
+dataset_name = 'tt100k_2021'
+timestamp_on_name = true
+
+[options]
+dataset_size = 10000
