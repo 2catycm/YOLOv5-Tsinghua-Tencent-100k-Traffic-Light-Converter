@@ -98,7 +98,7 @@ def generate_label_txt_by_item(item, tt100k, image_directory, label_directory, c
         label_directory (_type_): 标签的路径，比如 labels/train
         cate2num (dict): 比如{'pl80':0}
     """
-    prefix = "train" if item.path.startswith("train") else "val"
+    prefix = "train" if item.path.startswith("train") else "test"
     image_file = image_directory/item.path
     return generate_label_txt(image_file, str(item.id), item.objects, label_directory/prefix, cate2num, override=False)
 
